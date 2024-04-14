@@ -1,0 +1,120 @@
+---
+title: "analysisB"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(brms)
+
+dat <- read_csv("data/dataB.csv") %>%
+  mutate(icu_afer_culure = icu_stay_count_after_culture > 0,
+         language_english = language_english == 1,
+         charlson_group = cut_number(comorbidity_score_value, 4),
+         medicaid = insurance == "Medicaid",
+         race_group = case_when(
+           str_detect(ethnicity, "HISPANIC") ~ "Hispanic",
+           str_detect(ethnicity, "BLACK") ~ "Black",
+           str_detect(ethnicity, "WHITE") ~ "White",
+           TRUE ~ "Other"
+         ) %>% as_factor() %>% fct_infreq(),
+         race_white = str_detect(ethnicity, "WHITE")
+  )
+```
+
+
+```{r}
+model <- 
+  brm(in_hospital_mortality ~ language_english + charlson_group + s(age),
+      data = dat,
+      family = "bernoulli",
+      prior = c(set_prior("normal(0, 2.5)", class = "b")),
+      backend = "cmdstanr",
+      control = list(adapt_delta = 0.995),
+      seed = 42,
+      cores = 4)
+hypothesis(model, "language_englishTRUE < 0")
+```
+
+
+
+```{r}
+model <- 
+  brm(icu_afer_culure ~ language_english + charlson_group + s(age),
+      data = dat,
+      family = "bernoulli",
+      prior = c(set_prior("normal(0, 2.5)", class = "b")),
+      backend = "cmdstanr",
+      control = list(adapt_delta = 0.995),
+      seed = 42,
+      cores = 4)
+hypothesis(model, "language_englishTRUE < 0")
+```
+
+
+
+```{r}
+model <- 
+  brm(in_hospital_mortality ~ medicaid + charlson_group + s(age),
+      data = dat,
+      family = "bernoulli",
+      prior = c(set_prior("normal(0, 2.5)", class = "b")),
+      backend = "cmdstanr",
+      control = list(adapt_delta = 0.995),
+      seed = 42,
+      cores = 4)
+hypothesis(model, "medicaidTRUE < 0")
+```
+
+```{r}
+model <- 
+  brm(icu_afer_culure ~ medicaid + charlson_group + s(age),
+      data = dat,
+      family = "bernoulli",
+      prior = c(set_prior("normal(0, 2.5)", class = "b")),
+      backend = "cmdstanr",
+      control = list(adapt_delta = 0.995),
+      seed = 42,
+      cores = 4)
+hypothesis(model, "medicaidTRUE < 0")
+```
+
+
+```{r}
+model <- 
+  brm(in_hospital_mortality ~ race_white + charlson_group + s(age),
+      data = dat,
+      family = "bernoulli",
+      prior = c(set_prior("normal(0, 2.5)", class = "b")),
+      backend = "cmdstanr",
+      control = list(adapt_delta = 0.995),
+      seed = 42,
+      cores = 4)
+
+model
+```
+
+
+```{r}
+hypothesis(model, "race_whiteTRUE<0")
+```
+
+```{r}
+model <- 
+  brm(icu_afer_culure ~ race_white + charlson_group + s(age),
+      data = dat,
+      family = "bernoulli",
+      prior = c(set_prior("normal(0, 2.5)", class = "b")),
+      backend = "cmdstanr",
+      control = list(adapt_delta = 0.995),
+      seed = 42,
+      cores = 4)
+
+model
+```
+
+```{r}
+hypothesis(model, "race_whiteTRUE<0")
+```
+
+
