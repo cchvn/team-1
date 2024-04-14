@@ -7,7 +7,7 @@ format: html
 library(tidyverse)
 library(brms)
 
-dat <- read_csv("data/dataB.csv") %>%
+dat <- read_csv("../Cohort selection/CohortB_Bacteremia.csv") %>%
   mutate(icu_afer_culure = icu_stay_count_after_culture > 0,
          language_english = language_english == 1,
          charlson_group = cut_number(comorbidity_score_value, 4),
