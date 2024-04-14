@@ -1,0 +1,21 @@
+# Separate English and Non-English speakers with updated adjusted propensity scores
+english_speakers_adjusted = data_new[data_new['language_english'] == 1]
+non_english_speakers_adjusted = data_new[data_new['language_english'] == 0]
+
+# Using NearestNeighbors for adjusted matching
+nn_adjusted = NearestNeighbors(n_neighbors=1, algorithm='ball_tree')
+nn_adjusted.fit(non_english_speakers_adjusted[['adjusted_propensity_score']])
+
+# Find nearest non-English speaker for each English speaker based on adjusted propensity score
+distances_adjusted, indices_adjusted = nn_adjusted.kneighbors(english_speakers_adjusted[['adjusted_propensity_score']])
+
+# Extracting the matched non-English speakers
+matched_non_english_adjusted = non_english_speakers_adjusted.iloc[indices_adjusted.flatten()]
+
+# Combine matched datasets for comparison
+matched_data_adjusted = english_speakers_adjusted.copy()
+matched_data_adjusted['matched_non_english_mortality_adjusted'] = matched_non_english_adjusted['in_hospital_mortality'].values
+
+# Calculate means for in-hospital mortality in both groups for comparison after adjustment
+mortality_comparison_adjusted = matched_data_adjusted[['in_hospital_mortality', 'matched_non_english_mortality_adjusted']].mean()
+mortality_comparison_adjusted
